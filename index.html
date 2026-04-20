@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0f0a00;--bg2:#1a1100;--bg3:#261900;--bg4:#332200;
+    --card:#171000;--card2:#201600;
+    --text:#fff8e8;--text2:#b89a60;--text3:#6b5530;
+    --accent:#f59e0b;--accent2:#d97706;--accent3:#ef4444;--accent4:#34d399;
+    --border:#2e1f00;--border2:#3d2a00;
+    --danger:#ef4444;--success:#34d399;
+    --shadow:0 4px 24px rgba(0,0,0,0.6);
+    --r:12px;--r2:8px;
+    font-family:'DM Sans',sans-serif;
+  }
+  .light{
+    --bg:#fffbf0;--bg2:#fff3d0;--bg3:#ffe8a0;--bg4:#ffd970;
+    --card:#ffffff;--card2:#fffdf5;
+    --text:#1a0f00;--text2:#7a5500;--text3:#b8860b;
+    --border:#ffe0a0;--border2:#ffd070;
+    --shadow:0 4px 24px rgba(0,0,0,0.08);
+  }
+  body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+  a{color:inherit;text-decoration:none}
+  button{cursor:pointer;border:none;font-family:inherit}
+  input,textarea,select{font-family:inherit;outline:none}
+
+  #app{display:flex;flex-direction:column;min-height:100vh}
+  .navbar{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;gap:1.5rem;height:60px}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:-.02em;color:var(--accent);white-space:nowrap}
+  .logo span{color:var(--text);font-weight:400}
+  .nav-links{display:flex;gap:0.25rem;flex:1}
+  .nav-btn{background:transparent;color:var(--text2);font-size:.875rem;font-weight:500;padding:.4rem .85rem;border-radius:var(--r2);transition:all .2s}
+  .nav-btn:hover,.nav-btn.active{background:var(--bg3);color:var(--text)}
+  .nav-actions{display:flex;align-items:center;gap:.75rem;margin-left:auto}
+  .toggle-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s}
+  .toggle-btn:hover{background:var(--bg4);color:var(--text)}
+  .auth-btn{background:var(--accent);color:#0f0a00;font-size:.875rem;font-weight:700;padding:.45rem 1.1rem;border-radius:var(--r2);transition:all .2s}
+  .auth-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+  .auth-btn.secondary{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+  .auth-btn.secondary:hover{background:var(--bg3);color:var(--text)}
+
+  .page{display:none;flex:1;padding:2rem}
+  .page.active{display:block}
+
+  .hero{text-align:center;padding:4rem 1rem 3rem;max-width:700px;margin:0 auto}
+  .hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:.75rem;font-weight:500;padding:.3rem .85rem;border-radius:100px;margin-bottom:1.5rem;letter-spacing:.04em}
+  .hero-badge span{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:1rem}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{color:var(--text2);font-size:1.05rem;line-height:1.7;margin-bottom:2rem;font-weight:300}
+  .hero-cta{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+  .btn-primary{background:var(--accent);color:#0f0a00;font-weight:700;padding:.65rem 1.5rem;border-radius:var(--r2);font-size:.9rem;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+  .btn-primary:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,.3)}
+  .btn-ghost{background:var(--bg3);color:var(--text2);font-weight:500;padding:.65rem 1.5rem;border-radius:var(--r2);font-size:.9rem;border:1px solid var(--border2);transition:all .2s}
+  .btn-ghost:hover{background:var(--bg4);color:var(--text)}
+
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;max-width:700px;margin:2.5rem auto 0}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center}
+  .stat-num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--accent)}
+  .stat-label{font-size:.75rem;color:var(--text3);margin-top:.2rem;font-weight:500;letter-spacing:.03em}
+
+  .toolbar{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+  .search-box{flex:1;min-width:200px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.55rem 1rem;color:var(--text);font-size:.875rem}
+  .search-box::placeholder{color:var(--text3)}
+  .search-box:focus{border-color:var(--accent)}
+  .filter-select{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.55rem 1rem;color:var(--text2);font-size:.875rem}
+  .filter-select:focus{border-color:var(--accent)}
+  .tag{background:var(--bg3);color:var(--text2);font-size:.75rem;font-weight:500;padding:.3rem .75rem;border-radius:100px;cursor:pointer;border:1px solid transparent;transition:all .15s}
+  .tag:hover,.tag.active{background:var(--accent);color:#0f0a00;font-weight:700}
+
+  .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem}
+  .proj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+  .proj-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 32px rgba(245,158,11,.15)}
+  .proj-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem}
+  .proj-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+  .proj-badges{display:flex;gap:.35rem;flex-wrap:wrap}
+  .badge{font-size:.68rem;font-weight:600;padding:.2rem .55rem;border-radius:100px;letter-spacing:.03em}
+  .badge.open{background:rgba(52,211,153,.15);color:#34d399}
+  .badge.closed{background:rgba(239,68,68,.12);color:#ef4444}
+  .badge.progress{background:rgba(245,158,11,.15);color:#f59e0b}
+  .badge.cat{background:var(--bg3);color:var(--text2)}
+  .proj-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:.4rem;line-height:1.3}
+  .proj-desc{color:var(--text2);font-size:.82rem;line-height:1.6;margin-bottom:.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .proj-meta{display:flex;align-items:center;justify-content:space-between}
+  .proj-author{display:flex;align-items:center;gap:.5rem}
+  .avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#0f0a00;flex-shrink:0}
+  .proj-author-info{font-size:.75rem;color:var(--text3)}
+  .proj-author-info strong{color:var(--text2);font-weight:500}
+  .uni-tag{font-size:.7rem;color:var(--accent);font-weight:600;letter-spacing:.03em}
+  .tech-pill{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:.75rem;padding:.25rem .65rem;border-radius:var(--r2)}
+  .like-btn{background:transparent;color:var(--text3);font-size:.8rem;display:flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:var(--r2);transition:all .15s}
+  .like-btn:hover,.like-btn.liked{color:#ef4444}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal{background:var(--card);border:1px solid var(--border2);border-radius:var(--r);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .2s}
+  .modal-overlay.open .modal{transform:translateY(0)}
+  .modal-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+  .modal-body{padding:1.5rem}
+  .modal-close{background:var(--bg3);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .modal-close:hover{background:var(--bg4);color:var(--text)}
+  .detail-section{margin-bottom:1.25rem}
+  .detail-label{font-size:.72rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.4rem}
+  .detail-value{font-size:.9rem;color:var(--text);line-height:1.6}
+  .tech-pills{display:flex;gap:.4rem;flex-wrap:wrap}
+  .collab-request{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-top:1rem}
+  .modal-actions{display:flex;gap:.75rem;margin-top:1rem}
+
+  .form-page{max-width:640px;margin:0 auto}
+  .page-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;margin-bottom:.3rem}
+  .page-sub{color:var(--text2);font-size:.9rem;margin-bottom:1.75rem}
+  .form-group{margin-bottom:1.25rem}
+  .form-label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);letter-spacing:.04em;margin-bottom:.4rem}
+  .form-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.65rem 1rem;color:var(--text);font-size:.9rem;transition:border-color .2s}
+  .form-input:focus{border-color:var(--accent)}
+  .form-textarea{resize:vertical;min-height:90px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .form-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1.5rem}
+  .form-section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  .alert{padding:.7rem 1rem;border-radius:var(--r2);font-size:.85rem;margin-bottom:1rem;border-left:3px solid}
+  .alert.success{background:rgba(52,211,153,.1);border-color:var(--success);color:#34d399}
+  .alert.error{background:rgba(239,68,68,.1);border-color:var(--danger);color:#ef4444}
+
+  .dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:.75rem}
+  .dash-greeting{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800}
+  .dash-sub{color:var(--text2);font-size:.875rem;margin-top:.2rem}
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.75rem}
+  .dash-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;display:flex;align-items:center;gap:1rem}
+  .dash-stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+  .dash-stat-num{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700}
+  .dash-stat-label{font-size:.78rem;color:var(--text3);font-weight:500;margin-top:.1rem}
+  .section-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+  .activity-feed{display:flex;flex-direction:column;gap:.75rem}
+  .activity-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.85rem 1rem;display:flex;align-items:flex-start;gap:.85rem}
+  .activity-icon{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+  .activity-text{font-size:.82rem;color:var(--text2);line-height:1.5}
+  .activity-text strong{color:var(--text)}
+  .activity-time{font-size:.72rem;color:var(--text3);margin-top:.2rem}
+
+  .api-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;overflow:hidden}
+  .api-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:.85rem;cursor:pointer;transition:background .15s}
+  .api-header:hover{background:var(--bg3)}
+  .method-badge{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;padding:.25rem .6rem;border-radius:var(--r2);letter-spacing:.04em}
+  .method-badge.get{background:rgba(52,211,153,.15);color:#34d399}
+  .method-badge.post{background:rgba(245,158,11,.15);color:#f59e0b}
+  .method-badge.put{background:rgba(251,191,36,.15);color:#fbbf24}
+  .method-badge.del{background:rgba(239,68,68,.12);color:#ef4444}
+  .api-path{font-family:monospace;font-size:.85rem;color:var(--text)}
+  .api-desc{margin-left:auto;font-size:.8rem;color:var(--text3)}
+  .api-body{display:none;padding:1rem 1.25rem;border-top:1px solid var(--border)}
+  .api-body.open{display:block}
+  .code-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:.85rem;font-family:monospace;font-size:.78rem;color:#fcd34d;line-height:1.7;overflow-x:auto}
+  .param-row{display:flex;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.82rem;align-items:flex-start}
+  .param-name{font-family:monospace;color:var(--accent);min-width:110px}
+  .param-type{color:var(--text3);min-width:70px}
+  .param-desc{color:var(--text2);flex:1}
+  .empty-state{text-align:center;padding:3rem 1rem;color:var(--text3)}
+  @media(max-width:600px){.form-row{grid-template-columns:1fr}.dash-grid{grid-template-columns:1fr}.navbar{padding:0 1rem}.page{padding:1rem}}
+</style>
+</head>
+<body>
+<div id="app">
+  <nav class="navbar">
+    <div class="logo">Uni<span>Collab</span></div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="goto('explore')">Explore</button>
+      <button class="nav-btn" onclick="goto('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="goto('submit')">Submit</button>
+      <button class="nav-btn" onclick="goto('api')">API Docs</button>
+    </div>
+    <div class="nav-actions">
+      <button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+      <div id="authArea"></div>
+    </div>
+  </nav>
+
+  <div class="page active" id="page-explore">
+    <div class="hero">
+      <div class="hero-badge"><span></span>LIVE PLATFORM · 500+ PROJECTS</div>
+      <h1>Where Student <em>Innovation</em><br>Meets Collaboration</h1>
+      <p>Showcase projects, find collaborators, and connect across universities in one centralized hub built for the next generation of builders.</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="goto('submit')">🚀 Submit Project</button>
+        <button class="btn-ghost" onclick="document.getElementById('browse').scrollIntoView({behavior:'smooth'})">Browse Projects ↓</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="s1">0</div><div class="stat-label">PROJECTS</div></div>
+        <div class="stat-card"><div class="stat-num" id="s2">0</div><div class="stat-label">UNIVERSITIES</div></div>
+        <div class="stat-card"><div class="stat-num" id="s3">0</div><div class="stat-label">COLLABORATORS</div></div>
+        <div class="stat-card"><div class="stat-num" id="s4">0</div><div class="stat-label">COUNTRIES</div></div>
+      </div>
+    </div>
+    <div id="browse" style="max-width:1200px;margin:2rem auto 0">
+      <div class="toolbar">
+        <input class="search-box" type="text" placeholder="Search projects, universities, tech..." id="searchInput" oninput="filterProjects()">
+        <select class="filter-select" id="catFilter" onchange="filterProjects()">
+          <option value="">All Categories</option>
+          <option>AI / ML</option><option>Web Dev</option><option>IoT</option>
+          <option>Biotech</option><option>Blockchain</option><option>Robotics</option>
+          <option>EdTech</option><option>FinTech</option>
+        </select>
+        <select class="filter-select" id="statusFilter" onchange="filterProjects()">
+          <option value="">All Status</option>
+          <option>Open</option><option>In Progress</option><option>Closed</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem" id="tagFilters">
+        <span class="tag active" onclick="setTag(this,'')">All</span>
+        <span class="tag" onclick="setTag(this,'Python')">Python</span>
+        <span class="tag" onclick="setTag(this,'React')">React</span>
+        <span class="tag" onclick="setTag(this,'Machine Learning')">Machine Learning</span>
+        <span class="tag" onclick="setTag(this,'Node.js')">Node.js</span>
+        <span class="tag" onclick="setTag(this,'Flutter')">Flutter</span>
+        <span class="tag" onclick="setTag(this,'Arduino')">Arduino</span>
+      </div>
+      <div class="projects-grid" id="projectsGrid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-dashboard">
+    <div style="max-width:900px;margin:0 auto">
+      <div class="dash-header">
+        <div><div class="dash-greeting" id="dashGreeting">Welcome back 👋</div><div class="dash-sub" id="dashSub">Here's what's happening with your projects</div></div>
+        <button class="btn-primary" onclick="goto('submit')">+ New Project</button>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-stat"><div class="dash-stat-icon" style="background:rgba(245,158,11,.15)">📁</div><div><div class="dash-stat-num">4</div><div class="dash-stat-label">My Projects</div></div></div>
+        <div class="dash-stat"><div class="dash-stat-icon" style="background:rgba(52,211,153,.15)">🤝</div><div><div class="dash-stat-num">12</div><div class="dash-stat-label">Collaborations</div></div></div>
+        <div class="dash-stat"><div class="dash-stat-icon" style="background:rgba(251,191,36,.15)">⭐</div><div><div class="dash-stat-num">287</div><div class="dash-stat-label">Total Likes</div></div></div>
+        <div class="dash-stat"><div class="dash-stat-icon" style="background:rgba(245,158,11,.1)">🏫</div><div><div class="dash-stat-num">8</div><div class="dash-stat-label">Universities Connected</div></div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><div class="section-title">Recent Activity</div></div>
+      <div class="activity-feed">
+        <div class="activity-item"><div class="activity-icon">💬</div><div><div class="activity-text"><strong>Priya Sharma</strong> requested to collaborate on your <strong>Smart Campus</strong> project</div><div class="activity-time">2 hours ago · IIT Bombay</div></div></div>
+        <div class="activity-item"><div class="activity-icon">⭐</div><div><div class="activity-text"><strong>15 students</strong> liked your <strong>MediTrack</strong> project this week</div><div class="activity-time">5 hours ago</div></div></div>
+        <div class="activity-item"><div class="activity-icon">🏫</div><div><div class="activity-text"><strong>Stanford Design Lab</strong> featured your project in their newsletter</div><div class="activity-time">Yesterday</div></div></div>
+        <div class="activity-item"><div class="activity-icon">🔔</div><div><div class="activity-text"><strong>New collaboration request</strong> from NIT Trichy for your <strong>AgriBot</strong> project</div><div class="activity-time">2 days ago</div></div></div>
+        <div class="activity-item"><div class="activity-icon">✅</div><div><div class="activity-text">Your project <strong>EcoSense</strong> was approved and is now <strong>live</strong> on the platform</div><div class="activity-time">3 days ago</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-submit">
+    <div class="form-page">
+      <div class="page-title">Submit Project</div>
+      <div class="page-sub">Share your work with the global student community</div>
+      <div id="submitAlert"></div>
+      <div class="form-section">
+        <div class="form-section-title"><span>📋</span> Project Details</div>
+        <div class="form-group"><label class="form-label">PROJECT TITLE *</label><input class="form-input" type="text" id="f_title" placeholder="e.g. Smart Campus Navigation System"></div>
+        <div class="form-group"><label class="form-label">DESCRIPTION *</label><textarea class="form-input form-textarea" id="f_desc" placeholder="Describe your project..."></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">CATEGORY *</label><select class="form-input filter-select" id="f_cat" style="width:100%;background:var(--card)"><option value="">Select category</option><option>AI / ML</option><option>Web Dev</option><option>IoT</option><option>Biotech</option><option>Blockchain</option><option>Robotics</option><option>EdTech</option><option>FinTech</option></select></div>
+          <div class="form-group"><label class="form-label">STATUS</label><select class="form-input filter-select" id="f_status" style="width:100%;background:var(--card)"><option>Open</option><option>In Progress</option><option>Closed</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">TECH STACK (comma separated)</label><input class="form-input" type="text" id="f_tech" placeholder="e.g. Python, TensorFlow, React"></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><span>🏫</span> University & Team</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">UNIVERSITY / COLLEGE *</label><input class="form-input" type="text" id="f_uni" placeholder="e.g. IIT Delhi"></div>
+          <div class="form-group"><label class="form-label">DEPARTMENT</label><input class="form-input" type="text" id="f_dept" placeholder="e.g. Computer Science"></div>
+        </div>
+        <div class="form-group"><label class="form-label">YOUR NAME *</label><input class="form-input" type="text" id="f_author" placeholder="Full name"></div>
+        <div class="form-group"><label class="form-label">TEAM SIZE</label><input class="form-input" type="number" id="f_team" value="1" min="1" max="20"></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><span>🔗</span> Links & Resources</div>
+        <div class="form-group"><label class="form-label">GITHUB / CODE REPO</label><input class="form-input" type="url" id="f_github" placeholder="https://github.com/..."></div>
+        <div class="form-group"><label class="form-label">DEMO / LIVE LINK</label><input class="form-input" type="url" id="f_demo" placeholder="https://..."></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:.75rem"><input type="checkbox" id="f_collab" style="width:16px;height:16px;accent-color:var(--accent)"><label for="f_collab" style="font-size:.875rem;color:var(--text2);cursor:pointer">Open for collaborations from other universities</label></div>
+      </div>
+      <button class="btn-primary" style="width:100%;justify-content:center;padding:.8rem" onclick="submitProject()">🚀 Submit Project</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-api">
+    <div style="max-width:820px;margin:0 auto">
+      <div class="page-title">API Documentation</div>
+      <div class="page-sub">RESTful backend — Base URL: <code style="color:var(--accent);font-family:monospace">https://api.unicollab.io/v1</code></div>
+      <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.65rem 1rem;font-size:.8rem"><div style="color:var(--text3);font-size:.72rem;margin-bottom:.2rem">AUTH</div><div style="color:var(--accent);font-family:monospace">JWT Bearer Token</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.65rem 1rem;font-size:.8rem"><div style="color:var(--text3);font-size:.72rem;margin-bottom:.2rem">RATE LIMIT</div><div style="font-family:monospace">100 req/min</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.65rem 1rem;font-size:.8rem"><div style="color:var(--text3);font-size:.72rem;margin-bottom:.2rem">FORMAT</div><div style="font-family:monospace">JSON</div></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:.65rem 1rem;font-size:.8rem"><div style="color:var(--text3);font-size:.72rem;margin-bottom:.2rem">VERSION</div><div style="color:var(--success);font-family:monospace">v1 STABLE</div></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1.5rem">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:1rem">🗄️ Database Schema (PostgreSQL)</div>
+        <div class="code-block">CREATE TABLE users (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(120) NOT NULL,
+  email       VARCHAR(255) UNIQUE NOT NULL,
+  password    VARCHAR(255) NOT NULL,
+  university  VARCHAR(200),
+  role        ENUM('student','admin') DEFAULT 'student',
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE projects (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title         VARCHAR(255) NOT NULL,
+  description   TEXT NOT NULL,
+  category      VARCHAR(80),
+  status        ENUM('open','progress','closed') DEFAULT 'open',
+  tech_stack    TEXT[],
+  author_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+  open_collab   BOOLEAN DEFAULT true,
+  likes_count   INT DEFAULT 0,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_projects_category ON projects(category);
+CREATE INDEX idx_projects_status   ON projects(status);
+CREATE INDEX idx_projects_created  ON projects(created_at DESC);</div>
+      </div>
+      <div id="apiEndpoints"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="authModal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem" id="authModalTitle">Sign In</div><div style="color:var(--text2);font-size:.82rem;margin-top:.2rem" id="authModalSub">Access your UniCollab dashboard</div></div>
+        <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+      </div>
+      <div class="modal-body"><div id="authAlert"></div><div id="authForm"></div></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="projModal">
+    <div class="modal">
+      <div class="modal-header" id="projModalHeader"></div>
+      <div class="modal-body" id="projModalBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let state={user:null,darkMode:true,activeTag:'',projects:[]};
+const mockUsers=[
+  {id:'u1',name:'Arjun Mehta',email:'arjun@iitd.ac.in',password:'pass123',university:'IIT Delhi',department:'CSE',role:'student'},
+  {id:'u2',name:'Priya Sharma',email:'priya@iitb.ac.in',password:'pass123',university:'IIT Bombay',department:'EE',role:'student'}
+];
+const COLORS=['#f59e0b','#34d399','#f87171','#fb923c','#a78bfa','#38bdf8','#f472b6','#86efac'];
+const ICONS=['🤖','🌱','💊','🔗','🤝','🎓','🌐','📡','🏗','🔬','💻','🌿','🎮','🔒','📊','🚗'];
+const likedProjects=new Set();
+
+const projectsDB=[
+  {id:'p1',title:'Smart Campus Navigation',desc:'AI-powered indoor navigation using BLE beacons and computer vision to help students and visitors navigate complex university buildings in real time.',category:'AI / ML',status:'Open',tech:['Python','OpenCV','Flutter','Firebase'],uni:'IIT Delhi',dept:'CSE',author:'Arjun Mehta',likes:142,views:831,collab:true,github:'https://github.com',demo:'https://demo.com',date:'2025-03-10',team:4},
+  {id:'p2',title:'MediTrack Patient Portal',desc:'A HIPAA-compliant patient management system with telemedicine features, prescription tracking, and AI symptom checker for rural healthcare workers.',category:'Biotech',status:'In Progress',tech:['React','Node.js','MongoDB','TensorFlow'],uni:'AIIMS Delhi',dept:'Biomedical',author:'Priya Sharma',likes:98,views:603,collab:true,github:'',demo:'',date:'2025-02-18',team:3},
+  {id:'p3',title:'AgriBot Field Assistant',desc:'Autonomous robotic system for precision agriculture — soil analysis, targeted pesticide application, and crop health monitoring using multispectral imaging.',category:'Robotics',status:'Open',tech:['ROS','Python','Arduino','TensorFlow'],uni:'IIT Kharagpur',dept:'Agricultural Engg',author:'Ravi Kumar',likes:215,views:1204,collab:true,github:'https://github.com',demo:'',date:'2025-01-25',team:6},
+  {id:'p4',title:'EcoSense Air Monitor',desc:'Low-cost IoT sensor network for hyperlocal air quality monitoring with real-time dashboards and pollution forecasting using LSTM models.',category:'IoT',status:'Open',tech:['Arduino','Python','React','MQTT'],uni:'NIT Trichy',dept:'Electronics',author:'Meena Iyer',likes:87,views:412,collab:true,github:'https://github.com',demo:'https://demo.com',date:'2025-03-01',team:2},
+  {id:'p5',title:'BlockVote Secure Elections',desc:'Decentralized student body election system on Ethereum with zero-knowledge proofs ensuring voter anonymity and tamper-proof result tallying.',category:'Blockchain',status:'Closed',tech:['Solidity','React','Web3.js','Node.js'],uni:'BITS Pilani',dept:'CS',author:'Aditya Rao',likes:163,views:789,collab:false,github:'https://github.com',demo:'https://demo.com',date:'2024-12-15',team:3},
+  {id:'p6',title:'LearnPath Adaptive EdTech',desc:'Personalized learning platform that uses knowledge graphs and spaced repetition to create adaptive study paths for competitive exam aspirants.',category:'EdTech',status:'In Progress',tech:['Python','React','Neo4j','FastAPI'],uni:'IIIT Hyderabad',dept:'CS',author:'Sneha Gupta',likes:201,views:1087,collab:true,github:'',demo:'https://demo.com',date:'2025-02-05',team:5},
+  {id:'p7',title:'CryptoFi DeFi Dashboard',desc:'Unified DeFi portfolio tracker with risk analysis, gas optimization suggestions, and cross-chain yield aggregation for student crypto investors.',category:'FinTech',status:'Open',tech:['React','Ethers.js','Python','GraphQL'],uni:'IIM Ahmedabad',dept:'Finance Tech',author:'Rohit Bajaj',likes:74,views:298,collab:true,github:'https://github.com',demo:'',date:'2025-03-15',team:2},
+  {id:'p8',title:'NeuroSign Language App',desc:'Real-time Indian Sign Language recognition using MediaPipe hand tracking and a custom CNN, enabling deaf students to communicate digitally.',category:'AI / ML',status:'Open',tech:['Python','MediaPipe','TensorFlow','React Native'],uni:'JNU Delhi',dept:'CS',author:'Ananya Singh',likes:334,views:1672,collab:true,github:'https://github.com',demo:'https://demo.com',date:'2025-01-10',team:4},
+];
+
+function init(){
+  state.projects=projectsDB.map(p=>({...p}));
+  renderAuthArea();renderProjects();renderApiDocs();animateStats();
+  const saved=sessionStorage.getItem('uc_user');
+  if(saved){state.user=JSON.parse(saved);renderAuthArea();updateDashGreeting();}
+}
+
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const btns=document.querySelectorAll('.nav-btn');
+  const map={explore:0,dashboard:1,submit:2,api:3};
+  if(map[page]!==undefined)btns[map[page]].classList.add('active');
+  if(page==='dashboard'&&!state.user){goto('explore');showAuth('login');return;}
+  if(page==='submit'&&!state.user){goto('explore');showAuth('login');return;}
+}
+
+function toggleTheme(){
+  state.darkMode=!state.darkMode;
+  document.body.classList.toggle('light',!state.darkMode);
+  document.getElementById('themeBtn').textContent=state.darkMode?'🌙':'☀️';
+}
+
+function renderAuthArea(){
+  const el=document.getElementById('authArea');
+  if(state.user){
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:.6rem">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#0f0a00">${state.user.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <span style="font-size:.82rem;color:var(--text2)">${state.user.name.split(' ')[0]}</span>
+      <button class="auth-btn secondary" onclick="logout()">Out</button></div>`;
+  }else{
+    el.innerHTML=`<div style="display:flex;gap:.5rem">
+      <button class="auth-btn secondary" onclick="showAuth('login')">Sign In</button>
+      <button class="auth-btn" onclick="showAuth('register')">Register</button></div>`;
+  }
+}
+
+function showAuth(mode){
+  document.getElementById('authAlert').innerHTML='';
+  document.getElementById('authModalTitle').textContent=mode==='login'?'Sign In':'Create Account';
+  document.getElementById('authModalSub').textContent=mode==='login'?'Access your UniCollab dashboard':'Join 12,000+ student innovators';
+  const f=document.getElementById('authForm');
+  if(mode==='login'){
+    f.innerHTML=`<div class="form-group"><label class="form-label">EMAIL</label><input class="form-input" type="email" id="a_email" value="arjun@iitd.ac.in"></div>
+    <div class="form-group"><label class="form-label">PASSWORD</label><input class="form-input" type="password" id="a_pass" value="pass123"></div>
+    <button class="btn-primary" style="width:100%;justify-content:center;padding:.75rem;margin-top:.5rem" onclick="doLogin()">Sign In →</button>
+    <div style="text-align:center;font-size:.85rem;color:var(--text2);margin-top:1rem">New here? <a style="color:var(--accent);cursor:pointer;font-weight:600" onclick="showAuth('register')">Create account</a></div>
+    <div style="margin-top:.75rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:.65rem;font-size:.78rem;color:var(--text2)">Demo: <code style="color:var(--accent)">arjun@iitd.ac.in</code> / <code style="color:var(--accent)">pass123</code></div>`;
+  }else{
+    f.innerHTML=`<div class="form-group"><label class="form-label">FULL NAME</label><input class="form-input" type="text" id="a_name" placeholder="Your name"></div>
+    <div class="form-group"><label class="form-label">UNIVERSITY EMAIL</label><input class="form-input" type="email" id="a_email" placeholder="you@university.ac.in"></div>
+    <div class="form-group"><label class="form-label">UNIVERSITY</label><input class="form-input" type="text" id="a_uni" placeholder="e.g. IIT Delhi"></div>
+    <div class="form-group"><label class="form-label">PASSWORD</label><input class="form-input" type="password" id="a_pass" placeholder="Min 8 characters"></div>
+    <button class="btn-primary" style="width:100%;justify-content:center;padding:.75rem;margin-top:.5rem" onclick="doRegister()">Create Account →</button>
+    <div style="text-align:center;font-size:.85rem;color:var(--text2);margin-top:1rem">Already have an account? <a style="color:var(--accent);cursor:pointer;font-weight:600" onclick="showAuth('login')">Sign in</a></div>`;
+  }
+  openModal('authModal');
+}
+
+function doLogin(){
+  const email=document.getElementById('a_email').value.trim();
+  const pass=document.getElementById('a_pass').value;
+  const user=mockUsers.find(u=>u.email===email&&u.password===pass);
+  if(!user){document.getElementById('authAlert').innerHTML=`<div class="alert error">Invalid credentials. Try arjun@iitd.ac.in / pass123</div>`;return;}
+  state.user={...user,token:btoa(JSON.stringify({id:user.id}))};
+  delete state.user.password;
+  sessionStorage.setItem('uc_user',JSON.stringify(state.user));
+  closeModal('authModal');renderAuthArea();updateDashGreeting();
+  showNotif('Welcome back, '+user.name.split(' ')[0]+'! 👋');
+}
+
+function doRegister(){
+  const name=document.getElementById('a_name').value.trim();
+  const email=document.getElementById('a_email').value.trim();
+  const pass=document.getElementById('a_pass').value;
+  const uni=document.getElementById('a_uni').value.trim();
+  if(!name||!email||!pass||!uni){document.getElementById('authAlert').innerHTML=`<div class="alert error">Please fill all fields</div>`;return;}
+  if(mockUsers.find(u=>u.email===email)){document.getElementById('authAlert').innerHTML=`<div class="alert error">Email already registered</div>`;return;}
+  const newUser={id:'u'+Date.now(),name,email,password:pass,university:uni,department:'',role:'student'};
+  mockUsers.push(newUser);
+  document.getElementById('authAlert').innerHTML=`<div class="alert success">Account created! Signing you in...</div>`;
+  setTimeout(()=>{
+    state.user={...newUser,token:btoa(JSON.stringify({id:newUser.id}))};
+    delete state.user.password;
+    sessionStorage.setItem('uc_user',JSON.stringify(state.user));
+    closeModal('authModal');renderAuthArea();updateDashGreeting();
+    showNotif('Welcome to UniCollab, '+name.split(' ')[0]+'! 🎉');
+  },1200);
+}
+
+function logout(){state.user=null;sessionStorage.removeItem('uc_user');renderAuthArea();goto('explore');showNotif('Signed out successfully');}
+
+function updateDashGreeting(){
+  if(!state.user)return;
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('dashGreeting').textContent=g+', '+state.user.name.split(' ')[0]+' 👋';
+  document.getElementById('dashSub').textContent=state.user.university+' · '+(state.user.department||'Student');
+}
+
+function renderProjects(list){
+  const grid=document.getElementById('projectsGrid');
+  const projects=list!==undefined?list:state.projects;
+  if(!projects.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div style="font-size:2.5rem;margin-bottom:.75rem;opacity:.5">🔍</div><div>No projects found</div></div>`;return;}
+  grid.innerHTML=projects.map((p,i)=>{
+    const sc=p.status==='Open'?'open':p.status==='In Progress'?'progress':'closed';
+    const color=COLORS[i%COLORS.length];
+    const icon=ICONS[i%ICONS.length];
+    const liked=likedProjects.has(p.id);
+    return `<div class="proj-card" onclick="showProject('${p.id}')">
+      <div class="proj-header">
+        <div class="proj-icon" style="background:${color}22;color:${color}">${icon}</div>
+        <div class="proj-badges"><span class="badge ${sc}">${p.status}</span><span class="badge cat">${p.category}</span></div>
+      </div>
+      <div class="uni-tag">${p.uni}</div>
+      <div class="proj-title" style="margin-top:.3rem">${p.title}</div>
+      <div class="proj-desc">${p.desc}</div>
+      <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.85rem">
+        ${p.tech.slice(0,3).map(t=>`<span class="tech-pill" style="font-size:.68rem;padding:.15rem .55rem">${t}</span>`).join('')}
+        ${p.tech.length>3?`<span class="tech-pill" style="font-size:.68rem;padding:.15rem .55rem">+${p.tech.length-3}</span>`:''}
+      </div>
+      <div class="proj-meta" onclick="event.stopPropagation()">
+        <div class="proj-author">
+          <div class="avatar" style="background:${color}">${p.author.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+          <div class="proj-author-info"><strong>${p.author.split(' ')[0]}</strong> · ${p.dept||p.uni}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <button class="like-btn ${liked?'liked':''}" onclick="toggleLike('${p.id}',event)">${liked?'❤️':'🤍'} <span id="likes-${p.id}">${p.likes}</span></button>
+          <span style="font-size:.75rem;color:var(--text3)">👁 ${p.views}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleLike(id,e){
+  e&&e.stopPropagation();
+  const p=state.projects.find(x=>x.id===id);if(!p)return;
+  if(likedProjects.has(id)){likedProjects.delete(id);p.likes--;}
+  else{likedProjects.add(id);p.likes++;}
+  const btn=e.currentTarget;
+  btn.classList.toggle('liked',likedProjects.has(id));
+  btn.innerHTML=(likedProjects.has(id)?'❤️':'🤍')+' <span id="likes-'+id+'">'+p.likes+'</span>';
+}
+
+function showProject(id){
+  const p=state.projects.find(x=>x.id===id);if(!p)return;
+  p.views++;
+  const i=state.projects.indexOf(p);
+  const color=COLORS[i%COLORS.length];const icon=ICONS[i%ICONS.length];
+  const sc=p.status==='Open'?'open':p.status==='In Progress'?'progress':'closed';
+  document.getElementById('projModalHeader').innerHTML=`
+    <div style="display:flex;gap:1rem;align-items:flex-start">
+      <div class="proj-icon" style="width:48px;height:48px;background:${color}22;color:${color};border-radius:12px;font-size:1.4rem">${icon}</div>
+      <div style="flex:1">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem"><span class="badge ${sc}">${p.status}</span><span class="badge cat">${p.category}</span>${p.collab?'<span class="badge open">🤝 Open Collab</span>':''}</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem">${p.title}</div>
+        <div style="color:var(--accent);font-size:.78rem;font-weight:600;margin-top:.3rem">${p.uni}</div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeModal('projModal')">✕</button>`;
+  document.getElementById('projModalBody').innerHTML=`
+    <div class="detail-section"><div class="detail-label">About</div><div class="detail-value">${p.desc}</div></div>
+    <div class="detail-section"><div class="detail-label">Tech Stack</div><div class="tech-pills">${p.tech.map(t=>`<span class="tech-pill">${t}</span>`).join('')}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1rem">
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">${p.likes}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.2rem">LIKES</div></div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">${p.views}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.2rem">VIEWS</div></div>
+      <div style="background:var(--bg3);border-radius:var(--r2);padding:.75rem;text-align:center"><div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--accent)">${p.team}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.2rem">TEAM</div></div>
+    </div>
+    <div class="detail-section"><div class="detail-label">Submitted by</div><div class="detail-value">${p.author} · ${p.dept} · ${new Date(p.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+    ${p.collab?`<div class="collab-request"><div style="font-weight:600;font-size:.875rem;margin-bottom:.5rem">🤝 Open for Collaboration</div><div style="font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem">This project is accepting collaborators from other universities.</div>
+    <div class="modal-actions"><button class="btn-primary" onclick="requestCollab()">Request to Collaborate</button>${p.github?`<a href="${p.github}" target="_blank"><button class="btn-ghost">View Code ↗</button></a>`:''}</div></div>`:''}
+    ${p.demo?`<div style="margin-top:.75rem"><a href="${p.demo}" target="_blank"><button class="btn-ghost" style="width:100%;justify-content:center">🔗 View Live Demo ↗</button></a></div>`:''}`;
+  openModal('projModal');
+}
+
+function requestCollab(){
+  if(!state.user){closeModal('projModal');showAuth('login');return;}
+  closeModal('projModal');showNotif('Collaboration request sent! 🤝');
+}
+
+function filterProjects(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const cat=document.getElementById('catFilter').value;
+  const status=document.getElementById('statusFilter').value;
+  const tag=state.activeTag;
+  renderProjects(state.projects.filter(p=>{
+    return(!q||p.title.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||p.uni.toLowerCase().includes(q)||p.tech.some(t=>t.toLowerCase().includes(q)))
+      &&(!cat||p.category===cat)&&(!status||p.status===status)&&(!tag||p.tech.includes(tag));
+  }));
+}
+
+function setTag(el,tag){
+  state.activeTag=tag;
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');filterProjects();
+}
+
+function submitProject(){
+  if(!state.user){goto('explore');showAuth('login');return;}
+  const title=document.getElementById('f_title').value.trim();
+  const desc=document.getElementById('f_desc').value.trim();
+  const cat=document.getElementById('f_cat').value;
+  const uni=document.getElementById('f_uni').value.trim();
+  const author=document.getElementById('f_author').value.trim();
+  if(!title||!desc||!cat||!uni||!author){document.getElementById('submitAlert').innerHTML=`<div class="alert error">Please fill in all required fields (*)</div>`;return;}
+  const tech=document.getElementById('f_tech').value.split(',').map(t=>t.trim()).filter(Boolean);
+  state.projects.unshift({id:'p'+Date.now(),title,desc,category:cat,status:document.getElementById('f_status').value,
+    tech:tech.length?tech:['Not specified'],uni,dept:document.getElementById('f_dept').value.trim(),
+    author,likes:0,views:0,collab:document.getElementById('f_collab').checked,
+    github:document.getElementById('f_github').value,demo:document.getElementById('f_demo').value,
+    date:new Date().toISOString().split('T')[0],team:parseInt(document.getElementById('f_team').value)||1});
+  document.getElementById('submitAlert').innerHTML=`<div class="alert success">🎉 Project submitted! It's now live on the platform.</div>`;
+  setTimeout(()=>{document.getElementById('submitAlert').innerHTML='';goto('explore');renderProjects();showNotif('Your project is now live! 🚀');},2000);
+}
+
+const apiEndpoints=[
+  {method:'POST',path:'/auth/register',desc:'Register new user',params:[{name:'name',type:'string',desc:'Full name',req:true},{name:'email',type:'string',desc:'University email',req:true},{name:'password',type:'string',desc:'Min 8 chars',req:true}],response:'{"token":"jwt.bearer.token","user":{"id":"uuid","name":"Arjun Mehta","role":"student"}}'},
+  {method:'POST',path:'/auth/login',desc:'Authenticate user',params:[{name:'email',type:'string',desc:'Registered email',req:true},{name:'password',type:'string',desc:'Account password',req:true}],response:'{"token":"jwt.bearer.token","expires_in":3600}'},
+  {method:'GET',path:'/projects',desc:'List all projects',params:[{name:'category',type:'string',desc:'Filter by category',req:false},{name:'status',type:'enum',desc:'open|progress|closed',req:false},{name:'page',type:'number',desc:'Page number',req:false}],response:'{"data":[{"id":"uuid","title":"Smart Campus","status":"open","likes_count":142}],"total":512}'},
+  {method:'POST',path:'/projects',desc:'Create new project',params:[{name:'title',type:'string',desc:'Project title',req:true},{name:'description',type:'string',desc:'Full description',req:true},{name:'category',type:'string',desc:'Project category',req:true}],response:'{"id":"uuid","title":"My Project","status":"open","created_at":"2025-03-01T10:30:00Z"}'},
+  {method:'GET',path:'/projects/:id',desc:'Get project details',params:[{name:'id',type:'uuid',desc:'Project identifier',req:true}],response:'{"id":"uuid","title":"...","author":{"name":"Arjun"},"tech_stack":["Python","React"]}'},
+  {method:'POST',path:'/projects/:id/collaborate',desc:'Request collaboration',params:[{name:'id',type:'uuid',desc:'Project ID',req:true},{name:'message',type:'string',desc:'Intro message',req:false}],response:'{"id":"uuid","status":"pending"}'},
+  {method:'POST',path:'/projects/:id/like',desc:'Like / unlike project',params:[{name:'id',type:'uuid',desc:'Project ID',req:true}],response:'{"liked":true,"likes_count":143}'},
+];
+
+function renderApiDocs(){
+  document.getElementById('apiEndpoints').innerHTML=apiEndpoints.map((e,i)=>`
+    <div class="api-section">
+      <div class="api-header" onclick="toggleApi(${i})">
+        <span class="method-badge ${e.method.toLowerCase()==='delete'?'del':e.method.toLowerCase()}">${e.method}</span>
+        <span class="api-path">${e.path}</span>
+        <span class="api-desc">${e.desc}</span>
+      </div>
+      <div class="api-body" id="api-body-${i}">
+        ${e.params.length?`<div style="font-size:.8rem;font-weight:600;color:var(--text3);letter-spacing:.05em;margin-bottom:.5rem">PARAMETERS</div>
+        ${e.params.map(p=>`<div class="param-row"><span class="param-name">${p.name}</span><span class="param-type">${p.type}</span><span class="param-desc">${p.desc}${p.req?' <span style="color:var(--danger);font-size:.7rem">required</span>':''}</span></div>`).join('')}<br>`:''}
+        <div style="font-size:.8rem;font-weight:600;color:var(--text3);letter-spacing:.05em;margin-bottom:.5rem">RESPONSE</div>
+        <div class="code-block">${e.response}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleApi(i){document.getElementById('api-body-'+i).classList.toggle('open')}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'))});
+
+function showNotif(msg){
+  const n=document.createElement('div');
+  n.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;background:var(--card);border:1px solid var(--accent);border-radius:var(--r2);padding:.75rem 1.1rem;font-size:.85rem;color:var(--text);box-shadow:var(--shadow);z-index:999;max-width:300px`;
+  n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3500);
+}
+
+function animateStats(){
+  [{id:'s1',end:512},{id:'s2',end:148},{id:'s3',end:3400},{id:'s4',end:24}].forEach(t=>{
+    let s=0;const step=Math.ceil(t.end/60);
+    const tick=setInterval(()=>{
+      s=Math.min(s+step,t.end);
+      const el=document.getElementById(t.id);
+      if(el)el.textContent=s>=1000?(s/1000).toFixed(1)+'K':s;
+      if(s>=t.end)clearInterval(tick);
+    },25);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
